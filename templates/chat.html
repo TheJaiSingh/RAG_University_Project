@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRMCEM AI Assistant</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>🎓 SRMCEM AI Assistant</h1>
+        <p>Ask anything about Academics, Fees, Placements & Campus</p>
+    </div>
+
+    <div class="features">
+        <span>📚 Academics</span>
+        <span>💰 Fees</span>
+        <span>🏢 Placements</span>
+        <span>🏠 Hostel</span>
+        <span>📅 Calendar</span>
+        <span>👨‍🏫 MCA Faculty</span>
+    </div>
+
+    <div id="chat-box" class="chat-box">
+
+        <div class="bot-message">
+            👋 Welcome to SRMCEM AI Assistant
+
+            <br><br>
+
+            Try asking:
+
+            <div class="suggestions">
+
+                <button onclick="setQuestion('MCA Fee')">
+                    MCA Fee
+                </button>
+
+                <button onclick="setQuestion('Placement Support')">
+                    Placement
+                </button>
+
+                <button onclick="setQuestion('Library Facilities')">
+                    Library
+                </button>
+
+                <button onclick="setQuestion('Academic Calendar')">
+                    Calendar
+                </button>
+
+                <button onclick="setQuestion('MCA Faculty')">
+                    MCA Faculty
+                </button>
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="input-area">
+
+        <input
+            type="text"
+            id="question"
+            placeholder="Ask any question..."
+        >
+
+        <button onclick="askQuestion()">
+            Send
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+
+function setQuestion(text){
+    document.getElementById("question").value = text;
+}
+
+document.getElementById("question")
+.addEventListener("keypress", function(e){
+
+    if(e.key === "Enter"){
+        askQuestion();
+    }
+
+});
+
+async function askQuestion(){
+
+    let question =
+    document.getElementById("question")
+    .value.trim();
+
+    if(question === "")
+        return;
+
+    let chatBox =
+    document.getElementById("chat-box");
+
+    chatBox.innerHTML += `
+        <div class="user-message">
+            ${question}
+        </div>
+    `;
+
+    document.getElementById("question")
+    .value = "";
+
+    chatBox.innerHTML += `
+        <div class="bot-message loading">
+            🤖 Thinking...
+        </div>
+    `;
+
+    try{
+
+        let response =
+        await fetch("/ask",{
+
+            method:"POST",
+
+            headers:{
+                "Content-Type":"application/json"
+            },
+
+            body:JSON.stringify({
+                question:question
+            })
+
+        });
+
+        let data =
+        await response.json();
+
+        document
+        .querySelector(".loading")
+        .remove();
+
+        chatBox.innerHTML += `
+            <div class="bot-message">
+                ${data.answer}
+            </div>
+        `;
+
+        chatBox.scrollTop =
+        chatBox.scrollHeight;
+
+    }
+
+    catch(error){
+
+        document
+        .querySelector(".loading")
+        .remove();
+
+        chatBox.innerHTML += `
+            <div class="bot-message">
+                Server Error
+            </div>
+        `;
+    }
+}
+
+</script>
+
+</body>
+</html>
